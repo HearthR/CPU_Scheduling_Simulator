@@ -30,11 +30,11 @@ typedef struct _vpqueue
 } vpqueue;
 
 vprocess_ptr createProcess(int num);
-//bool isPidDuplicate(vprocess* vp, int current);
 void scheduleFCFS(vprocess_ptr vp, int size);
 void scheduleSJF(vprocess_ptr vp, int size);
 void schedulePESJF(vprocess_ptr vp, int size);
 void schedulePriority(vprocess_ptr vp, int size);
+void schedulePEPriority(vprocess_ptr vp, int size);
 void vpQSort(vprocess_ptr* vp_arr, int left, int right, int size, int mode);
 void vpSwap(vprocess_ptr* vp_arr, int i, int j);
 void vpQueuePush(vpqueue* vp_queue, vprocess_ptr vp, int size);
@@ -50,7 +50,8 @@ int main()
 //	scheduleFCFS(vp, psize);
 //	scheduleSJF(vp, psize);
 //	schedulePriority(vp, psize);
-	schedulePESJF(vp, psize);
+//	schedulePESJF(vp, psize);
+	schedulePEPriority(vp, psize);
 
 	system("pause");
 	return 0;
@@ -293,7 +294,6 @@ void schedulePESJF(vprocess_ptr vp, int size)
 				vpQSort(ready_queue.vp_arr, ready_queue.front, ready_queue.back - 1, size, VP_CPU_BURST);
 				if (ready_queue.front != ready_queue.back && running->cpu_burst > ready_queue.vp_arr[ready_queue.front % size]->cpu_burst)
 				{
-//					printf("\nPreemptive occured! Current time:%d    running->cpu_burst:%d    ready_queue First:%d\n", cur_time, running->cpu_burst, ready_queue.vp_arr[ready_queue.front % size]->cpu_burst);
 					printf(" %d]\n", cur_time);
 					vpQueuePush(&ready_queue, running, size);
 					running = vpQueuePop(&ready_queue, size);
@@ -388,6 +388,108 @@ void schedulePriority(vprocess_ptr vp, int size)
 				{
 					idleflag = true;
 					printf("<Idle> Process running [%d ~", cur_time);
+				}
+			}
+		}
+
+		if (running != NULL)
+		{
+			running->cpu_remaining--;
+		}
+		cur_time++;
+	}
+}
+
+void schedulePEPriority(vprocess_ptr vp, int size)
+{
+	int cur_time = 0;
+	vpqueue job_queue = { (vprocess_ptr*)calloc(sizeof(vprocess_ptr), size), 0, 0 };
+	vpqueue ready_queue = { (vprocess_ptr*)calloc(sizeof(vprocess_ptr), size), 0, 0 };
+	vprocess_ptr running = NULL;
+	bool idleflag = false;
+
+	for (int i = 0; i < size; i++)
+	{
+		vpQueuePush(&job_queue, &vp[i], size);
+	}
+	vpQSort(job_queue.vp_arr, 0, size - 1, size, VP_ARRIVAL);
+
+	for (int i = 0; i < size; i++)
+	{
+		printf("Num:%3d    PID:%3d    Arrival time:%3d    CPU burst:%3d    Priority:%3d\n", i, job_queue.vp_arr[i]->vprocess_id, job_queue.vp_arr[i]->arrival_t, job_queue.vp_arr[i]->cpu_burst, job_queue.vp_arr[i]->p_priority);
+	}
+	printf("\n\n");
+
+	printf("Gantt Chart:\n");
+	while (job_queue.front != job_queue.back || ready_queue.front != ready_queue.back || running != NULL)
+	{
+		while (job_queue.front != job_queue.back && job_queue.vp_arr[job_queue.front % size]->arrival_t == cur_time)
+		{
+			vpQueuePush(&ready_queue, vpQueuePop(&job_queue, size), size);
+		}
+
+		if (running == NULL)
+		{
+			if (ready_queue.front == ready_queue.back)	// if ready_queue is empty
+			{
+				if (idleflag == false)
+				{
+					idleflag = true;
+					printf("<Idle> Process running [%d ~", cur_time);
+				}
+				else
+				{
+					cur_time++;
+					continue;
+				}
+			}
+			else										// if ready_queue is nonempty
+			{
+				vpQSort(ready_queue.vp_arr, ready_queue.front, ready_queue.back - 1, size, VP_PRIORITY);
+
+				if (idleflag)
+				{
+					idleflag = false;
+					printf(" %d]\n", cur_time);
+					running = vpQueuePop(&ready_queue, size);
+					printf("<%d> Process running [%d ~", running->vprocess_id, cur_time);
+				}
+			}
+		}
+		else
+		{
+			if (running->cpu_remaining == 0)
+			{
+				printf(" %d]\n", cur_time);
+				running = NULL;
+
+				if (ready_queue.front == ready_queue.back && job_queue.front == job_queue.back)
+				{
+					break;
+				}
+
+				if (ready_queue.front != ready_queue.back)
+				{
+					vpQSort(ready_queue.vp_arr, ready_queue.front, ready_queue.back - 1, size, VP_PRIORITY);
+					running = vpQueuePop(&ready_queue, size);
+					printf("<%d> Process running [%d ~", running->vprocess_id, cur_time);
+				}
+				else
+				{
+					idleflag = true;
+					printf("<Idle> Process running [%d ~", cur_time);
+				}
+			}
+
+			else
+			{
+				vpQSort(ready_queue.vp_arr, ready_queue.front, ready_queue.back - 1, size, VP_PRIORITY);
+				if (ready_queue.front != ready_queue.back && running->p_priority > ready_queue.vp_arr[ready_queue.front % size]->p_priority)
+				{
+					printf(" %d]\n", cur_time);
+					vpQueuePush(&ready_queue, running, size);
+					running = vpQueuePop(&ready_queue, size);
+					printf("<%d> Process running [%d ~", running->vprocess_id, cur_time);
 				}
 			}
 		}
