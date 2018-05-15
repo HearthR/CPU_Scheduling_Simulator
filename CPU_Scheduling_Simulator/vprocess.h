@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <time.h>
+#include <stdio.h>
 
 
 #define VP_ARRIVAL 1500
@@ -17,6 +18,9 @@ typedef struct _vprocess
 	int p_priority;
 	int cpu_remaining;
 	int io_remaining;
+	int completed_t;
+	int waiting_start;
+	int waiting_t;
 } vprocess;
 
 typedef vprocess* vprocess_ptr;
@@ -29,8 +33,8 @@ typedef struct _vpqueue
 } vpqueue;
 
 
-
-vprocess_ptr createProcess(int num);
+vprocess_ptr createVProcess(int size);
+void resetVProcess(vprocess_ptr vp, int size);
 void vpQueuePush(vpqueue* vp_queue, vprocess_ptr vp, int size);
 vprocess_ptr vpQueuePop(vpqueue* vp_queue, int size);
 void vpQSort(vprocess_ptr* vp_arr, int left, int right, int size, int mode);

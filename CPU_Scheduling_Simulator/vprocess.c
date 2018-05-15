@@ -1,34 +1,46 @@
 #include "vprocess.h"
 
-vprocess_ptr createProcess(int num)
+vprocess_ptr createVProcess(int size)
 {
-	vprocess_ptr vp = (vprocess_ptr)calloc(sizeof(vprocess), num);
+	vprocess_ptr vp = (vprocess_ptr)calloc(sizeof(vprocess), size);
 
 	srand(time(NULL));
 
-	for (int i = 0; i < num; i++)
+	for (int i = 0; i < size; i++)
 	{
 		vp[i].vprocess_id = i + 1;
-		vp[i].arrival_t = rand() % 40;
-		vp[i].cpu_burst = rand() % 30 + 1;
+		vp[i].arrival_t = rand() % 30;
+		vp[i].cpu_burst = rand() % 20 + 1;
 		vp[i].cpu_remaining = vp[i].cpu_burst;
 		vp[i].io_burst = rand() % 30 + 1;
 		vp[i].io_remaining = vp[i].io_burst;
 		vp[i].p_priority = rand() % 20 + 1;
+		vp[i].completed_t = 0;
+		vp[i].waiting_start = 0;
+		vp[i].waiting_t = 0;
 	}
 
-	printf("\n%d processes successfully created\n\n", num);
+	printf("\n%d processes successfully created\n\n", size);
 	printf("Process list:\n");
-	for (int i = 0; i < num; i++)
+	for (int i = 0; i < size; i++)
 	{
-		printf("Num:%3d    PID:%3d    Arrival time:%3d    CPU burst:%3d    Priority:%3d\n", i, vp[i].vprocess_id, vp[i].arrival_t, vp[i].cpu_burst, vp[i].p_priority);
+		printf("PID:%3d    Arrival time:%3d    CPU burst:%3d    Priority:%3d\n", vp[i].vprocess_id, vp[i].arrival_t, vp[i].cpu_burst, vp[i].p_priority);
 	}
 	printf("\n\n");
 
 	return vp;
 }
 
-
+void resetVProcess(vprocess_ptr vp, int size)
+{
+	for (int i = 0; i < size; i++)
+	{
+		vp[i].cpu_remaining = vp[i].cpu_burst;
+		vp[i].completed_t = 0;
+		vp[i].waiting_start = 0;
+		vp[i].waiting_t = 0;
+	}
+}
 
 void vpQueuePush(vpqueue* vp_queue, vprocess_ptr vp, int size)
 {
