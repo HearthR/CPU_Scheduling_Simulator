@@ -66,7 +66,7 @@ void selectScheduler(vprocess_ptr vp, int size)
 				printf("Number of process : ");
 				scanf_s("%d", &size);
 				getchar();
-				createVProcess(size);
+				vp = createVProcess(size);
 				scheduler_select = 0;
 				break;
 			default:

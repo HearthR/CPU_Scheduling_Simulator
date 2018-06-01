@@ -1,3 +1,6 @@
+#ifndef SCHEDULER_H
+#define SCHEDULER_H
+
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,3 +14,5 @@ void schedulePriority(vprocess_ptr vp, int size);
 void schedulePEPriority(vprocess_ptr vp, int size);
 void scheduleRR(vprocess_ptr vp, int size, int t_quantum);
 void schedulerEval(vprocess_ptr vp, int size);
+
+#endif

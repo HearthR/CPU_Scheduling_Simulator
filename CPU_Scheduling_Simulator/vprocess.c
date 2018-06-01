@@ -12,7 +12,14 @@ vprocess_ptr createVProcess(int size)
 		vp[i].arrival_t = rand() % 30;
 		vp[i].cpu_burst = rand() % 20 + 1;
 		vp[i].cpu_remaining = vp[i].cpu_burst;
-		vp[i].io_burst = rand() % 30 + 1;
+		if (rand() % 2 == 1)
+		{
+			vp[i].io_burst = rand() % 20 + 1;
+		}
+		else
+		{
+			vp[i].io_burst = 0;
+		}
 		vp[i].io_remaining = vp[i].io_burst;
 		vp[i].p_priority = rand() % 20 + 1;
 		vp[i].completed_t = 0;
@@ -24,7 +31,7 @@ vprocess_ptr createVProcess(int size)
 	printf("Process list:\n");
 	for (int i = 0; i < size; i++)
 	{
-		printf("PID:%3d    Arrival time:%3d    CPU burst:%3d    Priority:%3d\n", vp[i].vprocess_id, vp[i].arrival_t, vp[i].cpu_burst, vp[i].p_priority);
+		printf("PID:%3d    Arrival time:%3d    CPU burst:%3d    I/O burst:%3d    Priority:%3d\n", vp[i].vprocess_id, vp[i].arrival_t, vp[i].cpu_burst, vp[i].io_burst, vp[i].p_priority);
 	}
 	printf("\n\n");
 
@@ -36,6 +43,7 @@ void resetVProcess(vprocess_ptr vp, int size)
 	for (int i = 0; i < size; i++)
 	{
 		vp[i].cpu_remaining = vp[i].cpu_burst;
+		vp[i].io_remaining = vp[i].io_burst;
 		vp[i].completed_t = 0;
 		vp[i].waiting_start = 0;
 		vp[i].waiting_t = 0;
@@ -117,6 +125,25 @@ void vpQSort(vprocess_ptr* vp_arr, int left, int right, int size, int mode)
 				}
 			}
 			break;
+
+		case VP_IO:
+			for (int i = left; i < right; i++)
+			{
+				if (vp_arr[i % size]->io_remaining <= vp_arr[right % size]->io_remaining)
+				{
+					if (border == i)
+					{
+						border++;
+						continue;
+					}
+					else
+					{
+						vpSwap(vp_arr, border % size, i % size);
+						border++;
+					}
+				}
+			}
+			break;
 	}
 
 	vpSwap(vp_arr, border % size, right % size);
@@ -137,4 +164,15 @@ void vpSwap(vprocess_ptr* vp_arr, int i, int j)
 	temp = vp_arr[i];
 	vp_arr[i] = vp_arr[j];
 	vp_arr[j] = temp;
+}
+
+void vpIOWorking(vpqueue* waiting, int size)
+{
+	for (int i = waiting->front; i < waiting->back; i++)
+	{
+		if (waiting->vp_arr[i % size]->io_remaining > 0)
+		{
+			waiting->vp_arr[i % size]->io_remaining--;
+		}
+	}
 }

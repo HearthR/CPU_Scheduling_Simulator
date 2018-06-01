@@ -1,4 +1,5 @@
-#pragma once
+#ifndef VPROCESS_H
+#define VPROCESS_H
 
 #include <stdlib.h>
 #include <time.h>
@@ -8,6 +9,7 @@
 #define VP_ARRIVAL 1500
 #define VP_CPU_BURST 1501
 #define VP_PRIORITY 1502
+#define VP_IO 1503
 
 typedef struct _vprocess
 {
@@ -39,3 +41,6 @@ void vpQueuePush(vpqueue* vp_queue, vprocess_ptr vp, int size);
 vprocess_ptr vpQueuePop(vpqueue* vp_queue, int size);
 void vpQSort(vprocess_ptr* vp_arr, int left, int right, int size, int mode);
 void vpSwap(vprocess_ptr* vp_arr, int i, int j);
+void vpIOWorking(vpqueue* waiting, int size);
+
+#endif
